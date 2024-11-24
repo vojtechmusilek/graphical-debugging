@@ -37,6 +37,8 @@ namespace GraphicalDebugging
         Geometry.Box m_currentBox = null;
         LocalCS m_currentLocalCS = null;
 
+        ExpressionDrawer.Settings m_settings = null;
+
         ObservableCollection<PlotItem> Plots { get; set; }
 
         /// <summary>
@@ -195,6 +197,7 @@ namespace GraphicalDebugging
                     settings.valuePlot_enableBars = optionPage.ValuePlot_EnableBars;
                     settings.valuePlot_enableLines = optionPage.ValuePlot_EnableLines;
                     settings.valuePlot_enablePoints = optionPage.ValuePlot_EnablePoints;
+                    settings.valuePlot_enableTooltips = optionPage.ValuePlot_EnableTooltips;
                 }
                 if (optionPage.PointPlot_EnableLines || optionPage.PointPlot_EnablePoints)
                 {
@@ -218,7 +221,7 @@ namespace GraphicalDebugging
                 }
 
                 // Load settings from option page
-                ExpressionDrawer.Settings referenceSettings = GetOptions();
+                m_settings = GetOptions();
 
                 // TODO: Names are redundant
                 string[] names = new string[Plots.Count];
@@ -260,7 +263,7 @@ namespace GraphicalDebugging
                                 plot.Color = Util.ConvertColor(Util.Colors[plot.ColorId]);
                             }
 
-                            settings[index] = referenceSettings.CopyColored(plot.Color);
+                            settings[index] = m_settings.CopyColored(plot.Color);
 
                             tryDrawing = true;
                         }
@@ -404,8 +407,7 @@ namespace GraphicalDebugging
                                 + " " + Util.ToString(m_currentLocalCS.InverseConvertY(point.Y))
                                 + ")";
 
-                bool drawTooltips = true;
-                if (drawTooltips)
+                if (m_settings.valuePlot_enableTooltips)
                 {
                     DrawTooltips(point);
                 }
@@ -522,6 +524,10 @@ namespace GraphicalDebugging
                     return Util.ToString(valuesContainer.GetValue(index));
                 }
             }
+
+            //if (drawable is ExpressionDrawer.PointsContainer pointsContainer)
+            //{
+            //}
 
             return null;
         }

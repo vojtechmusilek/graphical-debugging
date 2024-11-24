@@ -60,6 +60,7 @@ namespace GraphicalDebugging
             public bool valuePlot_enableBars = true;
             public bool valuePlot_enableLines = false;
             public bool valuePlot_enablePoints = false;
+            public bool valuePlot_enableTooltips = false;
             public bool pointPlot_enableLines = false;
             public bool pointPlot_enablePoints = true;
             // GraphicalWatch

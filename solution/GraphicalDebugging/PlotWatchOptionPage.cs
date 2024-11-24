@@ -17,6 +17,7 @@ namespace GraphicalDebugging
         private bool ValuePlot_enableBars = true;
         private bool ValuePlot_enableLines = false;
         private bool ValuePlot_enablePoints = false;
+        private bool ValuePlot_enableTooltips = false;
 
         [Category("Point Plot")]
         [DisplayName("Enable Lines")]
@@ -61,6 +62,15 @@ namespace GraphicalDebugging
         {
             get { return ValuePlot_enablePoints; }
             set { ValuePlot_enablePoints = value; }
+        }
+
+        [Category("Value Plot")]
+        [DisplayName("Enable Tooltips")]
+        [Description("Enable/disable drawing tooltips.")]
+        public bool ValuePlot_EnableTooltips
+        {
+            get { return ValuePlot_enableTooltips; }
+            set { ValuePlot_enableTooltips = value; }
         }
 
         protected override void OnApply(PageApplyEventArgs e)
