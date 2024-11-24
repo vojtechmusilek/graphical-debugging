@@ -951,6 +951,9 @@ namespace GraphicalDebugging
                 return true;
             }
 
+            public int GetCount() => values.Count;
+            public double GetValue(int index) => values[index];
+
             private List<double> values;
         }
 

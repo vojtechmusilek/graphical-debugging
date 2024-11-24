@@ -12,6 +12,8 @@ namespace GraphicalDebugging
     using System.Reflection;
     using System.Windows;
     using System.Windows.Controls;
+    using System.Windows.Documents;
+    using System.Windows.Media;
     using System.Windows.Media.Imaging;
 
     /// <summary>
@@ -401,6 +403,13 @@ namespace GraphicalDebugging
                 m_mouseTxt.Text = "(" + Util.ToString(m_currentLocalCS.InverseConvertX(point.X))
                                 + " " + Util.ToString(m_currentLocalCS.InverseConvertY(point.Y))
                                 + ")";
+
+                bool drawTooltips = true;
+                if (drawTooltips)
+                {
+                    DrawTooltips(point);
+                }
+
                 Canvas.SetLeft(m_mouseTxt, point.X + 2);
                 Canvas.SetTop(m_mouseTxt, point.Y + 2);
                 m_mouseTxt.Visibility = Visibility.Visible;
@@ -476,6 +485,45 @@ namespace GraphicalDebugging
                     }
                 }
             }
+        }
+
+        private void DrawTooltips(System.Windows.Point point)
+        {
+            var index = (int)Math.Round(m_currentLocalCS.InverseConvertX(point.X));
+
+            for (int i = 0; i < Plots.Count; i++)
+            {
+                var tooltipValue = GetTooltipValue(index, Plots[i].Drawable);
+                if (tooltipValue is null)
+                {
+                    continue;
+                }
+
+                m_mouseTxt.Inlines.Add(new Run($"\n{tooltipValue}"));
+                m_mouseTxt.Inlines.Add(new Run(" ▬ ")
+                {
+                    Foreground = new SolidColorBrush(Plots[i].Color)
+                });
+                m_mouseTxt.Inlines.Add(new Run(Plots[i].Name));
+            }
+        }
+
+        private string GetTooltipValue(int index, ExpressionDrawer.IDrawable drawable)
+        {
+            if (drawable is null)
+            {
+                return null;
+            }
+
+            if (drawable is ExpressionDrawer.ValuesContainer valuesContainer)
+            {
+                if (index > 0 && index < valuesContainer.GetCount())
+                {
+                    return Util.ToString(valuesContainer.GetValue(index));
+                }
+            }
+
+            return null;
         }
 
         private void imageGrid_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
