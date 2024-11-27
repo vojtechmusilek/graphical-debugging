@@ -6,3 +6,4 @@ solution/packages
 solution/*.sdf
 solution/*.db
 solution/*.opendb
+solution/GraphicalDebugging/.vs/
