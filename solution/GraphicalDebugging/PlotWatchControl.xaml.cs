@@ -1,4 +1,4 @@
-﻿//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // <copyright file="PlotWatchControl.xaml.cs">
 //     Copyright (c) Adam Wulkiewicz.
 // </copyright>
@@ -8,13 +8,16 @@ namespace GraphicalDebugging
 {
     using System;
     using System.Collections.ObjectModel;
+    using System.ComponentModel;
     using System.Drawing;
+    using System.IO;
     using System.Reflection;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Documents;
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
+    using Color = System.Windows.Media.Color;
 
     /// <summary>
     /// Interaction logic for PlotWatchControl.
@@ -132,9 +135,14 @@ namespace GraphicalDebugging
 
         private void ResetAt(PlotItem item, int index)
         {
-            ((System.ComponentModel.INotifyPropertyChanged)item).PropertyChanged += PlotItem_PropertyChanged;
             if (index < Plots.Count)
                 Plots.RemoveAt(index);
+            InsertAt(item, index);
+        }
+
+        private void InsertAt(PlotItem item, int index)
+        {
+            ((INotifyPropertyChanged)item).PropertyChanged += PlotItem_PropertyChanged;
             Plots.Insert(index, item);
         }
 
@@ -624,6 +632,80 @@ namespace GraphicalDebugging
         {
             Util.EnableDataGridItems(dataGrid, Plots,
                 (PlotItem plot) => plot.IsEnabled = false);
+        }
+
+        private void dataGridContextMenuExport_Click(object sender, RoutedEventArgs e)
+        {
+            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Select a location and name for the file",
+                Filter = "Text Files (*.txt)|*.txt",
+                FileName = $"export_{DateTime.Now:yyMMdd_HHmmss}.txt"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                string filePath = saveFileDialog.FileName;
+
+                try
+                {
+                    File.WriteAllText(filePath, "");
+                    foreach (var item in dataGrid.Items)
+                    {
+                        if (item is ColoredDrawableItem cdi && !string.IsNullOrEmpty(cdi.Name))
+                        {
+                            var color = TypeDescriptor.GetConverter(typeof(Color)).ConvertToString(cdi.Color);
+                            File.AppendAllText(filePath, $"{color}|{cdi.Name}{Environment.NewLine}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void dataGridContextMenuImport_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Select a file to import",
+                Filter = "Text Files (*.txt)|*.txt"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string filePath = openFileDialog.FileName;
+
+                try
+                {
+                    var i = dataGrid.Items.Count - 1;
+
+                    foreach (var line in File.ReadAllLines(filePath))
+                    {
+                        var split = line.Split(new char[] { '|' }, 2);
+                        if (split.Length == 2)
+                        {
+                            var name = split[1];
+                            var color = (Color)TypeDescriptor.GetConverter(typeof(Color)).ConvertFromString(split[0]);
+                            var item = new PlotItem()
+                            {
+                                Name = name,
+                                Color = color,
+                                ColorId = int.MaxValue
+                            };
+                            InsertAt(item, i++);
+                        }
+                    }
+
+                    UpdateItems(false);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         public void OnClose()
