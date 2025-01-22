@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
@@ -509,7 +510,8 @@ namespace GraphicalDebugging
         }
 
         public static void PasteDataGridItemFromClipboard<Item>(System.Windows.Controls.DataGrid dataGrid,
-                                                                System.Collections.ObjectModel.ObservableCollection<Item> itemsCollection)
+                                                                System.Collections.ObjectModel.ObservableCollection<Item> itemsCollection,
+                                                                Func<string, VariableItem> newItemCallback)
             where Item : VariableItem
         {
             string text = Clipboard.GetText();
@@ -522,9 +524,23 @@ namespace GraphicalDebugging
             int index = dataGrid.Items.IndexOf(dataGrid.SelectedItems[0]);
             if (index < 0 || index >= dataGrid.Items.Count)
                 return;
-
-            Item item = itemsCollection[index];
-            item.Name = text;
+            
+            if (text.Contains(Environment.NewLine))
+            {
+                // insert new items
+                var lines = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    var newItem = newItemCallback(lines[i]);
+                    itemsCollection.Insert(index + i, (Item)newItem);
+                }
+            }
+            else
+            {
+                // replace existing item name
+                Item item = itemsCollection[index];
+                item.Name = text;
+            }
         }
 
         // https://softwaremechanik.wordpress.com/2013/10/02/how-to-make-all-wpf-datagrid-cells-have-a-single-click-to-edit/

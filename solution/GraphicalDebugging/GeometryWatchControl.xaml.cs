@@ -162,7 +162,13 @@ namespace GraphicalDebugging
             }
             else if (e.Key == System.Windows.Input.Key.V && e.KeyboardDevice.Modifiers.HasFlag(System.Windows.Input.ModifierKeys.Control))
             {
-                Util.PasteDataGridItemFromClipboard(dataGrid, Geometries);
+                Util.PasteDataGridItemFromClipboard(dataGrid, Geometries, (name) =>
+                {
+                    var newItem = new GeometryItem() { Name = name };
+                    newItem.PropertyChanged += GeometryItem_PropertyChanged;
+                    return newItem;
+                });
+                UpdateItems(false);
             }
         }
 

@@ -8,10 +8,12 @@ namespace GraphicalDebugging
 {
     using System;
     using System.Collections.ObjectModel;
+    using System.ComponentModel;
     using System.Drawing;
     using System.Reflection;
     using System.Windows;
     using System.Windows.Controls;
+    using System.Windows.Media;
     using System.Windows.Media.Imaging;
 
     /// <summary>
@@ -163,7 +165,13 @@ namespace GraphicalDebugging
             }
             else if (e.Key == System.Windows.Input.Key.V && e.KeyboardDevice.Modifiers.HasFlag(System.Windows.Input.ModifierKeys.Control))
             {
-                Util.PasteDataGridItemFromClipboard(dataGrid, Plots);
+                Util.PasteDataGridItemFromClipboard(dataGrid, Plots, (name) =>
+                {
+                    var newItem = new PlotItem() { Name = name };
+                    newItem.PropertyChanged += PlotItem_PropertyChanged;
+                    return newItem;
+                });
+                UpdateItems(false);
             }
         }
 
